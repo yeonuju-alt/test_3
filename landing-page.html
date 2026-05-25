@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>무기력</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Pretendard:wght@300;400;500;700;800&display=swap');
+
+  :root {
+    --bg-deep: #0e1118;
+    --bg-soft: #161b26;
+    --ink: #e8ebf2;
+    --ink-dim: #9aa3b5;
+    --accent: #f2b880;
+    --accent-2: #8a9bff;
+    --glow: #ffd9a0;
+    --card: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    background: var(--bg-deep);
+    color: var(--ink);
+    overflow-x: hidden;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== Ambient background ===== */
+  .ambient {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background:
+      radial-gradient(900px 600px at 20% 10%, rgba(138,155,255,0.18), transparent 60%),
+      radial-gradient(800px 700px at 85% 30%, rgba(242,184,128,0.16), transparent 60%),
+      radial-gradient(700px 600px at 50% 100%, rgba(138,155,255,0.10), transparent 60%),
+      var(--bg-deep);
+  }
+  .stars {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .star {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: #fff;
+    border-radius: 50%;
+    opacity: 0;
+    animation: twinkle var(--dur) ease-in-out infinite;
+    animation-delay: var(--delay);
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0; transform: scale(0.6); }
+    50% { opacity: 0.7; transform: scale(1); }
+  }
+
+  /* ===== Nav ===== */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 7vw;
+    backdrop-filter: blur(12px);
+    background: rgba(14,17,24,0.55);
+    border-bottom: 1px solid transparent;
+    transition: border-color .4s, background .4s;
+  }
+  nav.scrolled { border-bottom: 1px solid var(--border); }
+  .logo {
+    font-family: 'Gowun Batang', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--accent); }
+  .nav-cta {
+    font-size: 0.9rem;
+    padding: 10px 22px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #1a1206;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform .25s, box-shadow .25s;
+  }
+  .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(242,184,128,0.35); }
+
+  /* ===== Hero ===== */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 140px 7vw 100px;
+    position: relative;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--ink-dim);
+    padding: 8px 18px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--card);
+    margin-bottom: 36px;
+    opacity: 0;
+    animation: rise .9s ease forwards .1s;
+  }
+  .badge .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+  }
+  .hero h1 {
+    font-family: 'Gowun Batang', serif;
+    font-size: clamp(2.4rem, 6vw, 4.6rem);
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -1px;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: rise 1s ease forwards .25s;
+  }
+  .hero h1 .grad {
+    background: linear-gradient(110deg, var(--glow), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero p.sub {
+    font-size: clamp(1.05rem, 2vw, 1.3rem);
+    color: var(--ink-dim);
+    font-weight: 300;
+    max-width: 640px;
+    margin-bottom: 44px;
+    opacity: 0;
+    animation: rise 1s ease forwards .4s;
+  }
+  .hero-cta-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    opacity: 0;
+    animation: rise 1s ease forwards .55s;
+  }
+  .btn-primary {
+    padding: 16px 38px;
+    border-radius: 999px;
+    background: linear-gradient(110deg, var(--glow), var(--accent));
+    color: #1a1206;
+    font-weight: 800;
+    font-size: 1.05rem;
+    text-decoration: none;
+    transition: transform .25s, box-shadow .25s;
+    box-shadow: 0 12px 40px rgba(242,184,128,0.25);
+  }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 18px 50px rgba(242,184,128,0.45); }
+  .btn-ghost {
+    padding: 16px 34px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--ink);
+    background: var(--card);
+    font-weight: 500;
+    font-size: 1.05rem;
+    text-decoration: none;
+    transition: border-color .25s, transform .25s;
+  }
+  .btn-ghost:hover { border-color: var(--accent-2); transform: translateY(-3px); }
+
+  .hero-note {
+    margin-top: 26px;
+    font-size: 0.85rem;
+    color: var(--ink-dim);
+    opacity: 0;
+    animation: rise 1s ease forwards .7s;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(28px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* floating book illustration */
+  .float-art {
+    margin-top: 64px;
+    font-size: 4rem;
+    opacity: 0;
+    animation: rise 1s ease forwards .85s, float 6s ease-in-out infinite 1.5s;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-16px); }
+  }
+
+  /* ===== Sections ===== */
+  section.block { padding: 110px 7vw; position: relative; }
+  .reveal { opacity: 0; transform: translateY(40px); transition: all .9s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+
+  .eyebrow {
+    font-size: 0.85rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    font-weight: 700;
+  }
+  .sec-title {
+    font-family: 'Gowun Batang', serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: -0.5px;
+    margin-bottom: 22px;
+  }
+  .sec-lead {
+    color: var(--ink-dim);
+    font-size: 1.1rem;
+    font-weight: 300;
+    max-width: 620px;
+  }
+
+  /* Empathy section */
+  .empathy { text-align: center; }
+  .empathy .quotes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-top: 56px;
+  }
+  .quote-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 30px 26px;
+    text-align: left;
+    font-family: 'Gowun Batang', serif;
+    font-size: 1.05rem;
+    color: var(--ink);
+    line-height: 1.8;
+    transition: transform .3s, border-color .3s;
+  }
+  .quote-card:hover { transform: translateY(-6px); border-color: var(--accent); }
+  .quote-card .mark { color: var(--accent); font-size: 1.6rem; display: block; margin-bottom: 8px; }
+
+  /* How it works */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 26px;
+    margin-top: 60px;
+  }
+  .step {
+    background: linear-gradient(160deg, var(--bg-soft), rgba(22,27,38,0.4));
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 38px 32px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .3s, border-color .3s;
+  }
+  .step:hover { transform: translateY(-8px); border-color: var(--accent-2); }
+  .step .num {
+    font-family: 'Gowun Batang', serif;
+    font-size: 3rem;
+    color: rgba(242,184,128,0.25);
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+  .step h3 { font-size: 1.3rem; margin-bottom: 12px; font-weight: 700; }
+  .step p { color: var(--ink-dim); font-weight: 300; font-size: 0.98rem; }
+
+  /* Features */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 22px;
+    margin-top: 60px;
+  }
+  .feature {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    padding: 28px;
+    border-radius: 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    transition: background .3s;
+  }
+  .feature:hover { background: rgba(255,255,255,0.07); }
+  .feature .ico {
+    font-size: 1.8rem;
+    flex-shrink: 0;
+    width: 54px; height: 54px;
+    display: grid; place-items: center;
+    border-radius: 14px;
+    background: linear-gradient(160deg, rgba(242,184,128,0.2), rgba(138,155,255,0.15));
+  }
+  .feature h3 { font-size: 1.15rem; margin-bottom: 8px; }
+  .feature p { color: var(--ink-dim); font-size: 0.95rem; font-weight: 300; }
+
+  /* Testimonial / philosophy band */
+  .band {
+    text-align: center;
+    padding: 130px 7vw;
+    background:
+      radial-gradient(600px 400px at 50% 0%, rgba(138,155,255,0.14), transparent 70%);
+  }
+  .band blockquote {
+    font-family: 'Gowun Batang', serif;
+    font-size: clamp(1.5rem, 3.5vw, 2.4rem);
+    line-height: 1.6;
+    max-width: 760px;
+    margin: 0 auto 24px;
+    letter-spacing: -0.5px;
+  }
+  .band cite { color: var(--ink-dim); font-style: normal; font-size: 0.95rem; }
+
+  /* Final CTA */
+  .final {
+    text-align: center;
+    padding: 120px 7vw 140px;
+  }
+  .final .glass {
+    max-width: 720px;
+    margin: 0 auto;
+    background: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border: 1px solid var(--border);
+    border-radius: 32px;
+    padding: 64px 44px;
+    backdrop-filter: blur(10px);
+  }
+  .final h2 {
+    font-family: 'Gowun Batang', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    margin-bottom: 18px;
+    line-height: 1.35;
+  }
+  .final p { color: var(--ink-dim); margin-bottom: 38px; font-weight: 300; font-size: 1.1rem; }
+  .store-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .store-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 26px;
+    border-radius: 16px;
+    background: #fff;
+    color: #14171f;
+    text-decoration: none;
+    font-weight: 700;
+    transition: transform .25s;
+  }
+  .store-btn:hover { transform: translateY(-3px); }
+  .store-btn small { display: block; font-size: 0.65rem; font-weight: 400; opacity: 0.6; }
+  .store-btn .big { font-size: 1rem; }
+
+  footer {
+    padding: 40px 7vw 60px;
+    text-align: center;
+    color: var(--ink-dim);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border);
+  }
+  footer .links { margin-top: 14px; display: flex; gap: 22px; justify-content: center; flex-wrap: wrap; }
+  footer a { color: var(--ink-dim); text-decoration: none; transition: color .2s; }
+  footer a:hover { color: var(--accent); }
+
+  @media (max-width: 640px) {
+    nav { padding: 16px 6vw; }
+    .nav-cta { display: none; }
+    section.block { padding: 80px 6vw; }
+  }
+</style>
+</head>
+<body>
+  <div class="ambient"></div>
+  <div class="stars" id="stars"></div>
+
+  <nav id="nav">
+    <div class="logo">다시, <span>첫 페이지</span></div>
+    <a href="#download" class="nav-cta">무료로 시작하기</a>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="badge"><span class="dot"></span> 하루 5분, 당신만의 이야기</div>
+    <h1>오늘은 아무것도<br>하기 싫은 당신에게,<br><span class="grad">단 한 줄의 이야기</span>를</h1>
+    <p class="sub">거창한 목표도, 빡빡한 미션도 없습니다. 그저 다음 장면이 궁금해서 한 페이지를 넘기다 보면, 어느새 다시 움직이고 있는 자신을 발견하게 돼요.</p>
+    <div class="hero-cta-row">
+      <a href="#download" class="btn-primary">조용히 시작해보기</a>
+      <a href="#how" class="btn-ghost">어떻게 작동하나요?</a>
+    </div>
+    <p class="hero-note">신용카드 불필요 · 알림 압박 없음 · 언제든 멈춰도 괜찮아요</p>
+    <div class="float-art">📖</div>
+  </header>
+
+  <!-- EMPATHY -->
+  <section class="block empathy">
+    <div class="reveal">
+      <div class="eyebrow">혹시 당신도</div>
+      <h2 class="sec-title">"해야 하는 건 아는데,<br>몸이 안 움직여요."</h2>
+      <p class="sec-lead" style="margin:0 auto;">자책하지 않아도 됩니다. 무기력은 게으름이 아니라, 잠시 멈춰버린 마음의 신호일 뿐이니까요.</p>
+    </div>
+    <div class="quotes">
+      <div class="quote-card reveal"><span class="mark">"</span>해야 할 일 목록만 봐도 숨이 막혀요.</div>
+      <div class="quote-card reveal" style="transition-delay:.1s"><span class="mark">"</span>의욕을 끌어올리는 앱들은 오히려 부담스러웠어요.</div>
+      <div class="quote-card reveal" style="transition-delay:.2s"><span class="mark">"</span>작은 거 하나라도, 끝까지 해낸 기억이 필요했어요.</div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="block" id="how">
+    <div class="reveal">
+      <div class="eyebrow">How it works</div>
+      <h2 class="sec-title">밀어붙이지 않습니다.<br>이야기가 당신을 데려갑니다.</h2>
+      <p class="sec-lead">동기부여를 강요하는 대신, 호기심을 살짝 건드립니다. 게임 속 작은 선택들이 현실의 작은 행동으로 이어져요.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="num">01</div>
+        <h3>이야기에 입장하기</h3>
+        <p>멈춰버린 세계, 당신만이 다음 장면을 열 수 있는 주인공이 됩니다. 거대한 시작이 아닌 단 한 문장부터요.</p>
+      </div>
+      <div class="step reveal" style="transition-delay:.12s">
+        <div class="num">02</div>
+        <h3>아주 작은 선택</h3>
+        <p>"창문을 열까?" 같은 사소한 선택이 이야기를 바꿉니다. 게임 속 행동은 현실의 미세한 움직임과 닮아 있어요.</p>
+      </div>
+      <div class="step reveal" style="transition-delay:.24s">
+        <div class="num">03</div>
+        <h3>흔적이 쌓이는 책</h3>
+        <p>읽어 내려간 페이지가 한 권의 책이 됩니다. 어제의 나보다 한 줄 더 나아간 증거가 남아요.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="block">
+    <div class="reveal">
+      <div class="eyebrow">Why it feels different</div>
+      <h2 class="sec-title">무기력한 날에 맞춰<br>설계된 게임</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature reveal">
+        <div class="ico">🌙</div>
+        <div><h3>압박 없는 진행</h3><p>스트릭(연속 기록)도, 죄책감을 부르는 빨간 알림도 없습니다. 며칠 쉬어도 이야기는 그대로 기다려줘요.</p></div>
+      </div>
+      <div class="feature reveal" style="transition-delay:.1s">
+        <div class="ico">🪶</div>
+        <div><h3>5분이면 충분</h3><p>짧은 챕터 단위라 침대에 누워서도 가능. 작은 완결의 경험이 다음 행동의 연료가 됩니다.</p></div>
+      </div>
+      <div class="feature reveal" style="transition-delay:.2s">
+        <div class="ico">🧭</div>
+        <div><h3>감정에 맞춘 분기</h3><p>오늘의 기분을 고르면 그날의 컨디션에 맞는 톤의 이야기가 펼쳐집니다.</p></div>
+      </div>
+      <div class="feature reveal" style="transition-delay:.3s">
+        <div class="ico">🌱</div>
+        <div><h3>현실로 이어지는 퀘스트</h3><p>"물 한 잔 마시기"처럼 게임 속 미션이 부담 없는 현실 행동으로 자연스럽게 연결돼요.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHILOSOPHY BAND -->
+  <section class="band reveal">
+    <blockquote>"세상에서 가장 무거운 일은<br>첫 페이지를 넘기는 것이다.<br>그 다음은, 이야기가 알아서 흐른다."</blockquote>
+    <cite>— 다시, 첫 페이지가 믿는 단 하나의 원칙</cite>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final" id="download">
+    <div class="glass reveal">
+      <h2>오늘은 한 줄만<br>읽어볼까요?</h2>
+      <p>무리하지 않아도 됩니다. 그저 첫 장면을 열어보는 것, 그거면 충분해요.</p>
+      <div class="store-row">
+        <a href="#" class="store-btn">🍎<span><small>Download on the</small><span class="big">App Store</span></span></a>
+        <a href="#" class="store-btn">▶<span><small>GET IT ON</small><span class="big">Google Play</span></span></a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="logo" style="justify-content:center;">다시, <span>첫 페이지</span></div>
+    <div class="links">
+      <a href="#">소개</a><a href="#">이용약관</a><a href="#">개인정보처리방침</a><a href="#">문의하기</a>
+    </div>
+    <p style="margin-top:18px;">© 2026 다시, 첫 페이지. 천천히 가도 괜찮아요.</p>
+  </footer>
+
+<script>
+  // Stars
+  const sk = document.getElementById('stars');
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    s.style.setProperty('--dur', (2 + Math.random() * 4) + 's');
+    s.style.setProperty('--delay', (Math.random() * 4) + 's');
+    sk.appendChild(s);
+  }
+
+  // Nav scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 30);
+  });
+
+  // Reveal on scroll
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
